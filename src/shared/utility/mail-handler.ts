@@ -1,47 +1,45 @@
+import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
-import * as FormData from 'form-data';
+import { InternalServerErrorException } from '@nestjs/common';
 
 export const sendMail = async (
   to: string,
   templateName: string,
   subject: string,
-  templateVars: Record<string, any> = {},
-): Promise<any> => {
+): Promise<void> => {
   try {
     const configService = new ConfigService();
-    const domain = configService.get<string>('EMAIL_SERVICE_DOMAIN');
-    const privateKey = configService.get<string>('EMAIL_SERVICE_PRIVATE_KEY');
+    const smtpHost = configService.get<string>('MAILER_HOST');
+    const smtpPort = configService.get<number>('MAILER_PORT');
+    const smtpUser = configService.get<string>('MAILER_USERNAME');
+    const smtpPass = configService.get<string>('MAILER_PASSWORD');
+    const emailFrom = configService.get<string>('MAILER_USERNAME');
 
-    if (!domain || !privateKey) {
-      throw new Error('Missing email service configuration');
+    if (!smtpHost || !smtpPort || !smtpUser || !smtpPass || !emailFrom) {
+      throw new InternalServerErrorException('Failed to send email');
     }
 
-    const form = new FormData();
-    form.append('to', to);
-    form.append('template', templateName);
-    form.append('subject', subject);
-    form.append('from', 'mailgun@sandbox2e57d910bd024b2d9f42f9f1ca4b27a8.mailgun.org');
-    Object.keys(templateVars).forEach((key) =>
-      form.append(`v:${key}`, templateVars[key]),
-    );
-
-    const username = 'api';
-    const token = Buffer.from(`${username}:${privateKey}`).toString('base64');
-
-    const response = await axios({
-      method: 'post',
-      url: `https://api.mailgun.net/v3/${domain}/messages`,
-      headers: {
-        Authorization: `Basic ${token}`,
-        contentType: 'multipart/form-data',
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
       },
-      data: form,
     });
-    return response;
+
+    const mailOptions = {
+      from: emailFrom,
+      to,
+      subject,
+      html: templateName,
+    };
+
+    await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error(error);
-    throw new Error('Failed to send email');
+    console.error('Error sending email:', error);
+    throw new InternalServerErrorException('Failed to send email');
   }
 };
+
 

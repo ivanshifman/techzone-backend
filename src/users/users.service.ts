@@ -16,6 +16,7 @@ import {
 } from 'src/shared/utility/password-manager';
 import { sendMail } from 'src/shared/utility/mail-handler';
 import { AuthService } from 'src/shared/utility/token-generator';
+import { mailTemplates } from 'src/shared/utility/mail-templates';
 
 @Injectable()
 export class UsersService {
@@ -57,8 +58,10 @@ export class UsersService {
         otpExpireTime,
       });
 
-      const emailTemplate = this.configService.get<string>(
-        'EMAIL_TEMPLATE_VERIFY_EMAIL',
+      const emailTemplate = mailTemplates['verifyMail']?.(
+        newUser.name,
+        newUser.email,
+        otp.toString(),
       );
 
       if (!emailTemplate) {
@@ -72,11 +75,6 @@ export class UsersService {
           newUser.email,
           emailTemplate,
           'Email verification - Techzone',
-          {
-            customerName: newUser.name,
-            customerEmail: newUser.email,
-            otp,
-          },
         );
       }
 
