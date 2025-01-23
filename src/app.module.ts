@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AllExceptionFilter } from './httpExceptionFilter';
 import { TransformationInterceptor } from './responseInterceptor';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
         };
       },
     }),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [
