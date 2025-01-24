@@ -1,7 +1,9 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -37,7 +39,7 @@ export class UsersService {
           this.configService.get<string>('ADMIN_SECRET_TOKEN')
       ) {
         throw new InternalServerErrorException('Not allowed to create admin');
-      } else if (createUserDto.type === UserType.COSTUMER) {
+      } else if (createUserDto.type === UserType.CUSTOMER) {
         createUserDto.isVerified = false;
       }
 
@@ -252,12 +254,82 @@ export class UsersService {
     }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(type: string) {
+    try {
+      const users = await this.userDb.find({
+        type,
+      });
+
+      if (!users || users.length === 0) {
+        throw new NotFoundException('No users found for the specified type');
+      }
+
+      return {
+        success: true,
+        message: 'Users fetched successfully',
+        result: users,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updatePasswordOrName(id: string, updateUserDto: UpdateUserDto) {
+    try {
+      const { oldPassword, newPassword, name } = updateUserDto;
+      if (!newPassword && !name) {
+        throw new BadRequestException('Please provide name or password');
+      }
+      const user = await this.userDb.findOne({ _id: id });
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      if (newPassword) {
+        if (!oldPassword) {
+          throw new BadRequestException(
+            'Old password is required to update password',
+          );
+        }
+        const isPasswordMatch = await comparePassword(
+          oldPassword,
+          user.password,
+        );
+        if (!isPasswordMatch) {
+          throw new UnauthorizedException('Invalid credentials');
+        }
+
+        const hashedPassword = await generateHashPassword(newPassword);
+
+        await this.userDb.updateVerify(
+          { _id: user._id },
+          { $set: { password: hashedPassword } },
+        );
+
+        if (name) {
+          await this.userDb.updateVerify(
+            {
+              _id: id,
+            },
+            {
+              name,
+            },
+          );
+        }
+
+        const updatedUser = await this.userDb.findOne({ _id: id });
+
+        return {
+          success: true,
+          message: 'User updated successfully',
+          result: {
+            name: updatedUser?.name || user.name,
+            email: updatedUser?.email || user.email,
+          },
+        };
+      }
+    } catch (error) {
+      throw error;
+    }
   }
 
   remove(id: number) {

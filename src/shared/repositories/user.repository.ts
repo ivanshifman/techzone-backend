@@ -11,6 +11,10 @@ export class UserRepository {
         return await this.userModel.findOne(query);
     }
 
+    async find(query: any) {
+        return await this.userModel.find(query);
+    }
+
     async create(user: Record<string, any>) {
         return await this.userModel.create(user);
     }
@@ -21,6 +25,6 @@ export class UserRepository {
 
 
     async updateVerify(query: any, data: Record<string, any>) {
-        return await this.userModel.updateOne(query, data);
+        return await this.userModel.updateOne(query, data, { new: true });
     }
 }

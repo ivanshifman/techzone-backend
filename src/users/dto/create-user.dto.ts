@@ -18,7 +18,7 @@ export class CreateUserDto {
 
     @IsNotEmpty()
     @IsString()
-    @IsIn([UserType.ADMIN, UserType.COSTUMER])
+    @IsIn([UserType.ADMIN, UserType.CUSTOMER])
     type!: string;
 
     @IsString()

@@ -3,7 +3,7 @@ import { Document } from "mongoose";
 
 export enum UserType {
     ADMIN = 'admin',
-    COSTUMER = 'costumer'
+    CUSTOMER = 'customer'
 }
 
 @Schema({timestamps: true, versionKey: false})
@@ -17,7 +17,7 @@ export class Users extends Document {
     @Prop({ required: true, minlength: 6 })
     password!: string;
 
-    @Prop({ required: true, enum: UserType ,default: UserType.COSTUMER })
+    @Prop({ required: true, enum: UserType ,default: UserType.CUSTOMER })
     type!: string;
 
     @Prop({ default: false })
