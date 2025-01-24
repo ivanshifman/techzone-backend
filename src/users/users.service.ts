@@ -37,8 +37,8 @@ export class UsersService {
           this.configService.get<string>('ADMIN_SECRET_TOKEN')
       ) {
         throw new InternalServerErrorException('Not allowed to create admin');
-      } else {
-        createUserDto.isVerified = true;
+      } else if (createUserDto.type === UserType.COSTUMER) {
+        createUserDto.isVerified = false;
       }
 
       const user = await this.userDb.findOne({ email: createUserDto.email });
@@ -134,12 +134,126 @@ export class UsersService {
     }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async verifyEmail(otp: string, email: string) {
+    try {
+      const user = await this.userDb.findOne({ email });
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      if (user.otp !== otp) {
+        throw new UnauthorizedException('Invalid otp');
+      }
+      if (user.otpExpireTime < new Date()) {
+        throw new UnauthorizedException('Otp expired');
+      }
+
+      await this.userDb.updateVerify({ email }, { $set: { isVerified: true } });
+
+      return {
+        success: true,
+        message: 'Email verified successfully',
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async sendOtpEmail(email: string) {
+    try {
+      const user = await this.userDb.findOne({ email });
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      if (user.isVerified) {
+        throw new InternalServerErrorException('Email already verified');
+      }
+      const otp = Math.floor(Math.random() * 900000) + 100000;
+
+      const otpExpireTime = new Date();
+      otpExpireTime.setMinutes(otpExpireTime.getMinutes() + 10);
+
+      await this.userDb.updateVerify(
+        { email },
+        { $set: { otp, otpExpireTime } },
+      );
+
+      const emailTemplate = mailTemplates['verifyMail']?.(
+        user.name,
+        user.email,
+        otp.toString(),
+      );
+
+      if (!emailTemplate) {
+        throw new InternalServerErrorException(
+          'An unexpected error occurred. Please try again later.',
+        );
+      }
+
+      await sendMail(
+        user.email,
+        emailTemplate,
+        'Email verification - Techzone',
+      );
+
+      return {
+        success: true,
+        message: 'Otp sent successfully',
+        result: { email: user.email },
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async forgotPassword(email: string) {
+    try {
+      const user = await this.userDb.findOne({ email });
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      const newPassword = Math.random().toString(36).substring(2, 12);
+      const hashedPassword = await generateHashPassword(newPassword);
+
+      await this.userDb.updateVerify(
+        { _id: user._id },
+        { $set: { password: hashedPassword } },
+      );
+
+      const loginUrl = this.configService.get<string>('LOGIN_URL');
+      if (!loginUrl) {
+        throw new InternalServerErrorException(
+          'Login URL configuration is missing. Please reach out to the administrator.',
+        );
+      }
+
+      const emailTemplate = mailTemplates['forgotPassword']?.(
+        user.name,
+        user.email,
+        newPassword,
+        loginUrl,
+      );
+
+      if (!emailTemplate) {
+        throw new InternalServerErrorException(
+          'An unexpected error occurred. Please try again later.',
+        );
+      }
+
+      await sendMail(user.email, emailTemplate, 'Password Reset - Techzone');
+
+      return {
+        success: true,
+        message: 'Password reset email sent successfully',
+        result: { email: user.email },
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  findAll() {
+    return `This action returns all users`;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

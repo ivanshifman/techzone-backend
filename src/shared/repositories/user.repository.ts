@@ -18,4 +18,9 @@ export class UserRepository {
     async updateOne(query: any, update: any) {
         return await this.userModel.updateOne(query, update);
     }
+
+
+    async updateVerify(query: any, data: Record<string, any>) {
+        return await this.userModel.updateOne(query, data);
+    }
 }
