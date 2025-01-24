@@ -10,12 +10,12 @@ import * as jwt from 'jsonwebtoken';
 export class AuthService {
   constructor(private readonly configService: ConfigService) {}
 
-  generateAuthToken(id: string): string {
+  generateAuthToken(id: string, type: string): string {
     const secret = this.configService.get<string>('JWT_SECRET');
     if (!secret) {
       throw new InternalServerErrorException('Token generation failed');
     }
-    return jwt.sign({ id }, secret, { expiresIn: '5m' });
+    return jwt.sign({ id, type }, secret, { expiresIn: '5m' });
   }
 
   decodeAuthToken(token: string): any {

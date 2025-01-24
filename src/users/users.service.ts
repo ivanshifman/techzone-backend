@@ -33,6 +33,10 @@ export class UsersService {
         createUserDto.password,
       );
 
+      if(createUserDto.type === UserType.ADMIN) {
+        createUserDto.isVerified = true;
+      }
+
       if (
         createUserDto.type === UserType.ADMIN &&
         createUserDto.secretToken !==
@@ -113,7 +117,7 @@ export class UsersService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
-      const token = this.authService.generateAuthToken(String(userExists._id));
+      const token = this.authService.generateAuthToken(String(userExists._id), String(userExists.type));
 
       await this.userDb.updateOne(
         { email: userExists.email },
