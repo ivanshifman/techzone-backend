@@ -3,6 +3,7 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
+  RequestMethod,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
@@ -17,6 +18,7 @@ import { UserRepository } from 'src/shared/repositories/user.repository';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from 'src/shared/middleware/roles.guard';
 import { AuthService } from 'src/shared/utility/token-generator';
+import { ValidateMongoIdMiddleware } from 'src/shared/middleware/validate.id';
 
 @Module({
   imports: [
@@ -62,5 +64,12 @@ import { AuthService } from 'src/shared/utility/token-generator';
 export class ProductsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthMiddleware).forRoutes(ProductsController);
+    consumer
+      .apply(ValidateMongoIdMiddleware)
+      .forRoutes(
+        { path: 'products/:id', method: RequestMethod.GET },
+        { path: 'products/:id', method: RequestMethod.PATCH },
+        { path: 'products/:id', method: RequestMethod.DELETE },
+      );
   }
 }

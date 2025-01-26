@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { Roles } from 'src/shared/middleware/role.decorator';
 import { UserType } from 'src/shared/schema/users';
 
@@ -13,7 +12,7 @@ export class ProductsController {
   @HttpCode(201)
   @Roles(UserType.ADMIN)
   async create(@Body() createProductDto: CreateProductDto) {
-    return await this.productsService.create(createProductDto);
+    return await this.productsService.createProduct(createProductDto);
   }
 
   @Get()
@@ -27,8 +26,9 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(+id, updateProductDto);
+  @Roles(UserType.ADMIN)
+  async update(@Param('id') id: string, @Body() updateProductDto: CreateProductDto) {
+    return await this.productsService.updateProduct(id, updateProductDto);
   }
 
   @Delete(':id')

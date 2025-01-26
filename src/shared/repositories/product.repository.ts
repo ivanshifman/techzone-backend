@@ -11,4 +11,12 @@ export class ProductRepository {
     async create(product: CreateProductDto) {
         return await this.productModel.create(product);
     }
+
+    async findOne(query: any) {
+        return await this.productModel.findOne(query).lean();
+    }
+
+    async findOneAndUpdateOne(query: any, update: any) {
+        return await this.productModel.findOneAndUpdate(query, update, { new: true });
+    }
 }

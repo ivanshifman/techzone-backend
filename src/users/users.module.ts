@@ -13,6 +13,7 @@ import { AuthService } from 'src/shared/utility/token-generator';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from 'src/shared/middleware/roles.guard';
 import { AuthMiddleware } from 'src/shared/middleware/auth';
+import { ValidateMongoIdMiddleware } from 'src/shared/middleware/validate.id';
 
 @Module({
   imports: [
@@ -34,5 +35,11 @@ export class UsersModule implements NestModule {
     consumer
       .apply(AuthMiddleware)
       .forRoutes({ path: '/users', method: RequestMethod.GET });
+    consumer
+      .apply(ValidateMongoIdMiddleware)
+      .forRoutes(
+        { path: 'users/update-name-password/:id', method: RequestMethod.PATCH },
+        { path: 'users/:id', method: RequestMethod.DELETE },
+      );
   }
 }

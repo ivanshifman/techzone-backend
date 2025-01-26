@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductRepository } from 'src/shared/repositories/product.repository';
 import { ConfigService } from '@nestjs/config';
 import { InjectStripeClient } from '@golevelup/nestjs-stripe';
@@ -14,7 +13,7 @@ export class ProductsService {
     @InjectStripeClient() private readonly stripeClient: Stripe,
   ) {}
 
-  async create(createProductDto: CreateProductDto) {
+  async createProduct(createProductDto: CreateProductDto) {
     try {
       if (!createProductDto.stripeProductId) {
         const createdProductInStripe = await this.stripeClient.products.create({
@@ -22,6 +21,13 @@ export class ProductsService {
           description: createProductDto.description,
         });
         createProductDto.stripeProductId = createdProductInStripe.id;
+      }
+
+      const existingProduct = await this.productDb.findOne({
+        productName: createProductDto.productName,
+      });
+      if (existingProduct) {
+        throw new ConflictException('Product already exists');
       }
 
       const createdProduct = await this.productDb.create(createProductDto);
@@ -44,8 +50,33 @@ export class ProductsService {
     return `This action returns a #${id} product`;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async updateProduct(id: string, updateProductDto: CreateProductDto) {
+    try {
+      const productExist = await this.productDb.findOne({ _id: id });
+      if (!productExist) {
+        throw new NotFoundException('Product does not exist');
+      }
+
+      const updatedProduct = await this.productDb.findOneAndUpdateOne(
+        { _id: id },
+        updateProductDto,
+      );
+
+      if (!productExist.stripeProductId) {
+        await this.stripeClient.products.update(productExist.stripeProductId, {
+          name: updateProductDto.productName,
+          description: updateProductDto.description,
+        });
+      }
+      
+      return {
+        message: 'Product updated successfully',
+        result: updatedProduct,
+        success: true,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   remove(id: number) {

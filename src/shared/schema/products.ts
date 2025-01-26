@@ -36,7 +36,7 @@ export class Feedbackers extends Document {
 
 export const FeedbackSchema = SchemaFactory.createForClass(Feedbackers);
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, versionKey: false })
 export class SkuDetails extends Document {
   @Prop({})
   skuName!: string;
@@ -61,7 +61,7 @@ export const skuDetailsSchema = SchemaFactory.createForClass(SkuDetails);
 
 @Schema({ timestamps: true, versionKey: false })
 export class Products {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   productName!: string;
 
   @Prop({ required: true })
@@ -73,13 +73,13 @@ export class Products {
   })
   image?: string;
 
-  @Prop({ required: true, enum: categoryType })
+  @Prop({ required: true, enum: categoryType, index: true })
   category!: string;
 
-  @Prop({ required: true, enum: platformType })
+  @Prop({ required: true, enum: platformType, index: true })
   platformType!: string;
 
-  @Prop({ required: true, enum: baseType })
+  @Prop({ required: true, enum: baseType, index: true })
   baseType!: string;
 
   @Prop({ required: true })
