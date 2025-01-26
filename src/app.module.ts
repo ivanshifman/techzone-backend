@@ -7,6 +7,7 @@ import { AllExceptionFilter } from './httpExceptionFilter';
 import { TransformationInterceptor } from './responseInterceptor';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { UsersModule } from './users/users.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { UsersModule } from './users/users.module';
       },
     }),
     UsersModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [

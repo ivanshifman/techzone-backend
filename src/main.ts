@@ -6,6 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe({
@@ -15,7 +16,9 @@ async function bootstrap() {
     skipMissingProperties: true
   }));
 
-  const configService = app.get(ConfigService);
+  const appPrefix = configService.get<string>('API_PREFIX') || '/api/v1';
+  app.setGlobalPrefix(appPrefix);
+  
   const port = configService.get<number>('PORT') || 3000;
   await app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
