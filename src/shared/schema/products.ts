@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 export enum categoryType {
   operatingSystem = 'Operating System',
@@ -111,3 +112,4 @@ export class Products {
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Products);
+ProductSchema.plugin(mongoosePaginate);

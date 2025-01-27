@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Roles } from 'src/shared/middleware/role.decorator';
 import { UserType } from 'src/shared/schema/users';
+import { GetProductQueryDto } from './dto/get-product-quey-dto';
 
 @Controller('products')
 export class ProductsController {
@@ -16,13 +17,13 @@ export class ProductsController {
   }
 
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  async findAll(@Query() query: GetProductQueryDto) {
+    return await this.productsService.findAllProducts(query);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.productsService.findOneProduct(id);
   }
 
   @Patch(':id')
@@ -32,7 +33,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return await this.productsService.removeProduct(id);
   }
 }

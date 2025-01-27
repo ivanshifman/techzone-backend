@@ -27,7 +27,11 @@ export class UsersService {
     private readonly userDb: UserRepository,
     private readonly authService: AuthService,
   ) {}
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<{
+    message: string;
+    result: any;
+    success: boolean;
+  }> {
     try {
       createUserDto.password = await generateHashPassword(
         createUserDto.password,
@@ -97,7 +101,11 @@ export class UsersService {
     }
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<{
+    success: boolean;
+    message: string;
+    result: any;
+  }> {
     try {
       const { email, password } = loginDto;
 
@@ -140,7 +148,10 @@ export class UsersService {
     }
   }
 
-  async verifyEmail(otp: string, email: string) {
+  async verifyEmail(otp: string, email: string): Promise<{
+    success: boolean;
+    message: string;
+  }> {
     try {
       const user = await this.userDb.findOne({ email });
       if (!user) {
@@ -164,7 +175,11 @@ export class UsersService {
     }
   }
 
-  async sendOtpEmail(email: string) {
+  async sendOtpEmail(email: string): Promise<{
+    success: boolean;
+    message: string;
+    result: any;
+  }> {
     try {
       const user = await this.userDb.findOne({ email });
       if (!user) {
@@ -211,7 +226,11 @@ export class UsersService {
     }
   }
 
-  async forgotPassword(email: string) {
+  async forgotPassword(email: string): Promise<{
+    success: boolean;
+    message: string;
+    result: any;
+  }> {
     try {
       const user = await this.userDb.findOne({ email });
       if (!user) {
@@ -258,7 +277,11 @@ export class UsersService {
     }
   }
 
-  async findAll(type: string) {
+  async findAll(type: string): Promise<{
+    success: boolean;
+    message: string;
+    result: any;
+  }> {
     try {
       const users = await this.userDb.find({
         type,
@@ -278,59 +301,52 @@ export class UsersService {
     }
   }
 
-  async updatePasswordOrName(id: string, updateUserDto: UpdateUserDto) {
+  async updatePasswordOrName(id: string, updateUserDto: UpdateUserDto): Promise<{ success: boolean; message: string; result: any }> {
     try {
       const { oldPassword, newPassword, name } = updateUserDto;
       if (!newPassword && !name) {
         throw new BadRequestException('Please provide name or password');
       }
+
       const user = await this.userDb.findOne({ _id: id });
       if (!user) {
         throw new UnauthorizedException('Invalid credentials');
       }
+
       if (newPassword) {
         if (!oldPassword) {
-          throw new BadRequestException(
-            'Old password is required to update password',
-          );
+          throw new BadRequestException('Old password is required to update password');
         }
-        const isPasswordMatch = await comparePassword(
-          oldPassword,
-          user.password,
-        );
+
+        const isPasswordMatch = await comparePassword(oldPassword, user.password);
         if (!isPasswordMatch) {
           throw new UnauthorizedException('Invalid credentials');
         }
 
         const hashedPassword = await generateHashPassword(newPassword);
-
         await this.userDb.updateVerify(
           { _id: user._id },
           { $set: { password: hashedPassword } },
         );
-
-        if (name) {
-          await this.userDb.updateVerify(
-            {
-              _id: id,
-            },
-            {
-              name,
-            },
-          );
-        }
-
-        const updatedUser = await this.userDb.findOne({ _id: id });
-
-        return {
-          success: true,
-          message: 'User updated successfully',
-          result: {
-            name: updatedUser?.name || user.name,
-            email: updatedUser?.email || user.email,
-          },
-        };
       }
+      
+      if (name) {
+        await this.userDb.updateVerify(
+          { _id: id },
+          { name },
+        );
+      }
+      
+      const updatedUser = await this.userDb.findOne({ _id: id });
+      
+      return {
+        success: true,
+        message: 'User updated successfully',
+        result: {
+          name: updatedUser?.name || user.name,
+          email: updatedUser?.email || user.email,
+        },
+      };
     } catch (error) {
       throw error;
     }

@@ -63,7 +63,19 @@ import { ValidateMongoIdMiddleware } from 'src/shared/middleware/validate.id';
 })
 export class ProductsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes(ProductsController);
+    consumer
+      .apply(AuthMiddleware)
+      .exclude(
+        {
+          path: 'products',
+          method: RequestMethod.GET,
+        },
+        {
+          path: 'products/:id',
+          method: RequestMethod.GET,
+        },
+      )
+      .forRoutes(ProductsController);
     consumer
       .apply(ValidateMongoIdMiddleware)
       .forRoutes(
