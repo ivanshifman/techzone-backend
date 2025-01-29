@@ -83,6 +83,8 @@ export class ProductsModule implements NestModule {
         { path: 'products/:id', method: RequestMethod.PATCH },
         { path: 'products/:id', method: RequestMethod.DELETE },
         { path: 'products/:id/image', method: RequestMethod.POST },
+        { path: 'products/:productId/skus', method: RequestMethod.POST },
+        { path: 'products/:productId/skus/:skuId', method: RequestMethod.PUT },
       );
   }
 }

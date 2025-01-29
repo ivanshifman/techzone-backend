@@ -1,9 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  Query,
+  UseInterceptors,
+  UploadedFile,
+  Put,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
+import { GetProductQueryDto } from './dto/get-product-quey-dto';
 import { CreateProductDto } from './dto/create-product.dto';
+import { ProductSkuDto, ProductSkuDtoArr } from './dto/product-sku-dto';
 import { Roles } from 'src/shared/middleware/role.decorator';
 import { UserType } from 'src/shared/schema/users';
-import { GetProductQueryDto } from './dto/get-product-quey-dto';
 import { ConfigService } from '@nestjs/config';
 import { DynamicFileInterceptor } from 'src/shared/utility/dynamic-file-interceptor';
 
@@ -30,7 +44,10 @@ export class ProductsController {
 
   @Patch(':id')
   @Roles(UserType.ADMIN)
-  async update(@Param('id') id: string, @Body() updateProductDto: CreateProductDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateProductDto: CreateProductDto,
+  ) {
     return await this.productsService.updateProduct(id, updateProductDto);
   }
 
@@ -42,12 +59,41 @@ export class ProductsController {
   @Post('/:id/image')
   @Roles(UserType.ADMIN)
   @UseInterceptors(
-    function () {
+    (function () {
       const configService = new ConfigService();
       return DynamicFileInterceptor.create(configService);
-    }(),
+    })(),
   )
-  async uploadProductImage(@Param('id') id: string, @UploadedFile() file: ParameterDecorator) {
+  async uploadProductImage(
+    @Param('id') id: string,
+    @UploadedFile() file: ParameterDecorator,
+  ) {
     return await this.productsService.uploadProductImage(id, file);
+  }
+
+  @Post('/:productId/skus')
+  @Roles(UserType.ADMIN)
+  async updateProductSku(
+    @Param('productId') productId: string,
+    @Body() updateProductDto: ProductSkuDtoArr,
+  ) {
+    return await this.productsService.updateProductSku(
+      productId,
+      updateProductDto,
+    );
+  }
+
+  @Put('/:productId/skus/:skuId')
+  @Roles(UserType.ADMIN)
+  async updateProductSkuById(
+    @Param('productId') productId: string,
+    @Param('skuId') skuId: string,
+    @Body() updateProductDto: ProductSkuDto,
+  ) {
+    return await this.productsService.updateProductSkuById(
+      productId,
+      skuId,
+      updateProductDto,
+    );
   }
 }

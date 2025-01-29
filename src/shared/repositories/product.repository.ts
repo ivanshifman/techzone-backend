@@ -21,7 +21,7 @@ export class ProductRepository {
     return await this.productModel.findOne(query).lean();
   }
 
-  async findOneAndUpdateOne(query: any, update: any) {
+  async findOneAndUpdate(query: any, update: any) {
     return await this.productModel.findOneAndUpdate(query, update, {
       new: true,
     });
@@ -65,27 +65,5 @@ export class ProductRepository {
         totalProductCount: result.totalDocs,
         products: result.docs,
       };
-    // options.sort = options.sort || { _id: 1 };
-    // options.limit = options.limit || 12;
-    // options.skip = options.skip || 0;
-
-    // if (query.search) {
-    //   query.productName = new RegExp(query.search, 'i');
-    //   delete query.search;
-    // }
-
-    // const products = await this.productModel.aggregate([
-    //   {
-    //     $match: query,
-    //   },
-    //   {
-    //     $sort: options.sort,
-    //   },
-    //   { $skip: options.skip },
-    //   { $limit: options.limit },
-    // ]);
-
-    // const totalProductCount = await this.productModel.countDocuments(query);
-    // return { totalProductCount, products };
   }
 }

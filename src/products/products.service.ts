@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import Stripe from 'stripe';
@@ -11,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { Products } from 'src/shared/schema/products';
 import { CreateProductDto } from './dto/create-product.dto';
 import { GetProductQueryDto } from './dto/get-product-quey-dto';
+import { ProductSkuDto, ProductSkuDtoArr } from './dto/product-sku-dto';
 import { unlinkSync } from 'fs';
 
 @Injectable()
@@ -157,7 +159,7 @@ export class ProductsService {
         throw new NotFoundException('Product does not exist');
       }
 
-      const updatedProduct = await this.productDb.findOneAndUpdateOne(
+      const updatedProduct = await this.productDb.findOneAndUpdate(
         { _id: id },
         updateProductDto,
       );
@@ -214,7 +216,10 @@ export class ProductsService {
     }
   }
 
-  async uploadProductImage(id: string, file: any): Promise<{
+  async uploadProductImage(
+    id: string,
+    file: any,
+  ): Promise<{
     message: string;
     result: string;
     success: boolean;
@@ -251,7 +256,7 @@ export class ProductsService {
       });
 
       unlinkSync(file.path);
-      await this.productDb.findOneAndUpdateOne(
+      await this.productDb.findOneAndUpdate(
         { _id: id },
         { imageDetails: resOfCloudinary, image: resOfCloudinary.secure_url },
       );
@@ -264,6 +269,125 @@ export class ProductsService {
         message: 'Product image uploaded successfully',
         result: resOfCloudinary.secure_url,
         success: true,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateProductSku(
+    productId: string,
+    data: ProductSkuDtoArr,
+  ): Promise<{
+    message: string;
+    success: boolean;
+    result: any;
+  }> {
+    try {
+      const product = await this.productDb.findOne({ _id: productId });
+      if (!product) {
+        throw new NotFoundException('Product does not exist');
+      }
+
+      const generateSkuCode = () =>
+        Math.random().toString(36).substring(2, 8) + '-' + Date.now();
+      for (let i = 0; i < data.skuDetails.length; i++) {
+        data.skuDetails[i].skuCode = generateSkuCode();
+        if (!data.skuDetails[i].stripePriceId) {
+          const stripPriceDetails = await this.stripeClient.prices.create({
+            unit_amount: Math.round(data.skuDetails[i].price * 100),
+            currency: 'usd',
+            product: product.stripeProductId,
+            metadata: {
+              skuCode: data.skuDetails[i].skuCode ?? '',
+              lifetime: data.skuDetails[i].lifetime + '',
+              productId: productId,
+              price: data.skuDetails[i].price,
+              productName: product.productName,
+              productImage:
+                product.image ||
+                'https://static.vecteezy.com/system/resources/thumbnails/016/808/173/small_2x/camera-not-allowed-no-photography-image-not-available-concept-icon-in-line-style-design-isolated-on-white-background-editable-stroke-vector.jpg',
+            },
+          });
+          if (stripPriceDetails && stripPriceDetails.id) {
+            data.skuDetails[i].stripePriceId = stripPriceDetails.id;
+          } else {
+            throw new InternalServerErrorException(
+              'Failed to create stripe price: missing ID',
+            );
+          }
+        }
+      }
+
+      const updatedProduct = await this.productDb.findOneAndUpdate(
+        { _id: productId },
+        { $push: { skuDetails: data.skuDetails } },
+      );
+
+      return {
+        message: 'Product sku updated successfully',
+        success: true,
+        result: updatedProduct,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateProductSkuById(
+    productId: string,
+    skuId: string,
+    data: ProductSkuDto,
+  ): Promise<{
+    message: string;
+    success: boolean;
+    result: any;
+  }> {
+    try {
+      const product = await this.productDb.findOne({ _id: productId });
+      if (!product) {
+        throw new NotFoundException('Product does not exist');
+      }
+
+      const sku = product.skuDetails.find((sku) => sku._id == skuId);
+      if (!sku) {
+        throw new NotFoundException('Sku does not exist');
+      }
+
+      if (data.price !== sku.price) {
+        const priceDetails = await this.stripeClient.prices.create({
+          unit_amount: Math.round(data.price * 100),
+          currency: 'usd',
+          product: product.stripeProductId,
+          metadata: {
+            skuCode: sku.skuCode ?? '',
+            lifetime: data.lifetime + '',
+            productId: productId,
+            price: data.price,
+            productName: product.productName,
+            productImage:
+              product.image ||
+              'https://static.vecteezy.com/system/resources/thumbnails/016/808/173/small_2x/camera-not-allowed-no-photography-image-not-available-concept-icon-in-line-style-design-isolated-on-white-background-editable-stroke-vector.jpg',
+          },
+        });
+
+        data.stripePriceId = priceDetails.id;
+      }
+
+      const dataForUpdate = Object.keys(data).reduce((acc, key) => {
+        acc[`skuDetails.$.${key}`] = data[key];
+        return acc;
+      }, {});
+
+      const result = await this.productDb.findOneAndUpdate(
+        { _id: productId, 'skuDetails._id': skuId },
+        { $set: dataForUpdate },
+      );
+
+      return {
+        message: 'Product sku updated successfully',
+        success: true,
+        result,
       };
     } catch (error) {
       throw error;
