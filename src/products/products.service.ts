@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -386,6 +387,145 @@ export class ProductsService {
 
       return {
         message: 'Product sku updated successfully',
+        success: true,
+        result,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async addProductSkuLicense(
+    productId: string,
+    skuId: string,
+    licenseKey: string,
+  ): Promise<{
+    message: string;
+    success: boolean;
+    result: any;
+  }> {
+    try {
+      const product = await this.productDb.findOne({ _id: productId });
+      if (!product) {
+        throw new NotFoundException('Product does not exist');
+      }
+
+      const sku = product.skuDetails.find((sku) => sku._id == skuId);
+      if (!sku) {
+        throw new NotFoundException('Sku does not exist');
+      }
+
+      if (!licenseKey) {
+        throw new BadRequestException('License key is required');
+      }
+
+      const result = await this.productDb.createLicense(
+        productId,
+        skuId,
+        licenseKey,
+      );
+
+      return {
+        message: 'License key added successfully',
+        success: true,
+        result,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async removeProductSkuLicense(id: string): Promise<{
+    message: string;
+    success: boolean;
+    result: any;
+  }> {
+    try {
+      const result = await this.productDb.removeLicense({ _id: id });
+      if (!result) {
+        throw new NotFoundException('License key does not exist');
+      }
+      return {
+        message: 'License key removed successfully',
+        success: true,
+        result,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getProductSkuLicenses(
+    productId: string,
+    skuId: string,
+  ): Promise<{
+    message: string;
+    success: boolean;
+    result: any;
+  }> {
+    try {
+      const product = await this.productDb.findOne({ _id: productId });
+      if (!product) {
+        throw new NotFoundException('Product does not exist');
+      }
+
+      const sku = product.skuDetails.find((sku) => sku._id == skuId);
+      if (!sku) {
+        throw new NotFoundException('Sku does not exist');
+      }
+
+      const result = await this.productDb.findLicense({
+        product: productId,
+        productSku: skuId,
+      });
+
+      return {
+        message: 'Licenses fetched successfully',
+        success: true,
+        result,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateProductSkuLicense(
+    productId: string,
+    skuId: string,
+    licenseKeyId: string,
+    licenseKey: string,
+  ): Promise<{
+    message: string;
+    success: boolean;
+    result: any;
+  }> {
+    try {
+      const product = await this.productDb.findOne({ _id: productId });
+      if (!product) {
+        throw new NotFoundException('Product does not exist');
+      }
+
+      const sku = product.skuDetails.find((sku) => sku._id == skuId);
+      if (!sku) {
+        throw new NotFoundException('Sku does not exist');
+      }
+
+      if (!licenseKey) {
+        throw new BadRequestException('License key is required');
+      }
+
+      const license = await this.productDb.findLicense({ _id: licenseKeyId });
+      if (!license) {
+        throw new NotFoundException('License key does not exist');
+      }
+
+      const result = await this.productDb.updateLicense(
+        { _id: licenseKeyId },
+        { licenseKey: licenseKey },
+      );
+
+      return {
+        message: 'License key updated successfully',
         success: true,
         result,
       };

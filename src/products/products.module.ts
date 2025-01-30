@@ -10,6 +10,7 @@ import { ProductsController } from './products.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Products, ProductSchema } from 'src/shared/schema/products';
 import { Users, UserSchema } from 'src/shared/schema/users';
+import { License, LicenseSchema } from 'src/shared/schema/license';
 import { StripeModule } from '@golevelup/nestjs-stripe';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthMiddleware } from 'src/shared/middleware/auth';
@@ -30,6 +31,10 @@ import { ValidateMongoIdMiddleware } from 'src/shared/middleware/validate.id';
       {
         name: Users.name,
         schema: UserSchema,
+      },
+      {
+        name: License.name,
+        schema: LicenseSchema,
       },
     ]),
     StripeModule.forRootAsync({
@@ -76,15 +81,26 @@ export class ProductsModule implements NestModule {
         },
       )
       .forRoutes(ProductsController);
-    consumer
-      .apply(ValidateMongoIdMiddleware)
-      .forRoutes(
-        { path: 'products/:id', method: RequestMethod.GET },
-        { path: 'products/:id', method: RequestMethod.PATCH },
-        { path: 'products/:id', method: RequestMethod.DELETE },
-        { path: 'products/:id/image', method: RequestMethod.POST },
-        { path: 'products/:productId/skus', method: RequestMethod.POST },
-        { path: 'products/:productId/skus/:skuId', method: RequestMethod.PUT },
-      );
+    consumer.apply(ValidateMongoIdMiddleware).forRoutes(
+      { path: 'products/:id', method: RequestMethod.GET },
+      { path: 'products/:id', method: RequestMethod.PATCH },
+      { path: 'products/:id', method: RequestMethod.DELETE },
+      { path: 'products/:id/image', method: RequestMethod.POST },
+      { path: 'products/:productId/skus', method: RequestMethod.POST },
+      {
+        path: 'products/:productId/skus/:skuId/licenses',
+        method: RequestMethod.POST,
+      },
+      {
+        path: 'products/:productId/skus/:skuId/licenses',
+        method: RequestMethod.GET,
+      },
+      { path: 'products/:productId/skus/:skuId', method: RequestMethod.PUT },
+      {
+        path: 'products/:productId/skus/:skuId/licenses/:licenseKeyId',
+        method: RequestMethod.PUT,
+      },
+      { path: 'products/licenses/:licenseKeyId', method: RequestMethod.DELETE },
+    );
   }
 }

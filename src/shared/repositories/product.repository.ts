@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Products } from '../schema/products';
-import { PaginateModel } from 'mongoose';
+import { License } from '../schema/license';
+import { Model, PaginateModel } from 'mongoose';
 import { CreateProductDto } from 'src/products/dto/create-product.dto';
-
-
-
 
 @Injectable()
 export class ProductRepository {
   constructor(
-    @InjectModel(Products.name) private readonly productModel: PaginateModel<Products>,
+    @InjectModel(Products.name)
+    private readonly productModel: PaginateModel<Products>,
+    @InjectModel(License.name)
+    private readonly licenseModel: Model<License>,
   ) {}
 
   async create(product: CreateProductDto) {
@@ -56,14 +57,38 @@ export class ProductRepository {
 
   async find(query: Record<string, any>, options: any) {
     if (query.search) {
-        query.productName = new RegExp(query.search, 'i');
-        delete query.search;
-      }
-  
-      const result = await this.productModel.paginate(query, options);
-      return {
-        totalProductCount: result.totalDocs,
-        products: result.docs,
-      };
+      query.productName = new RegExp(query.search, 'i');
+      delete query.search;
+    }
+
+    const result = await this.productModel.paginate(query, options);
+    return {
+      totalProductCount: result.totalDocs,
+      products: result.docs,
+    };
+  }
+
+  async createLicense(productId: string, skuId: string, licenseKey: string) {
+    const newLicense = new this.licenseModel({
+      product: productId,
+      productSku: skuId,
+      licenseKey,
+    });
+
+    return await newLicense.save();
+  }
+
+  async removeLicense(query: any) {
+    return await this.licenseModel.findOneAndDelete(query);
+  }
+
+  async findLicense(query: any) {
+    return await this.licenseModel.find(query).lean();
+  }
+
+  async updateLicense(query: any, update: any) {
+    return await this.licenseModel.findOneAndUpdate(query, update, {
+      new: true,
+    });
   }
 }
