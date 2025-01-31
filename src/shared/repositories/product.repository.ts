@@ -82,13 +82,39 @@ export class ProductRepository {
     return await this.licenseModel.findOneAndDelete(query);
   }
 
-  async findLicense(query: any) {
-    return await this.licenseModel.find(query).lean();
+  async findLicense(query: any, limit?: number) {
+    if (limit && limit > 0) {
+      const license = await this.licenseModel.find(query).limit(limit).lean();
+      return license;
+    }
+    const license = await this.licenseModel.find(query).lean();
+    return license;
   }
 
   async updateLicense(query: any, update: any) {
     return await this.licenseModel.findOneAndUpdate(query, update, {
       new: true,
     });
+  }
+
+  async updateLicenseMany(query: any, data: any) {
+    return await this.licenseModel.updateMany(query, data);
+  }
+
+  async deleteSku(id: string, skuId: string) {
+    return await this.productModel.updateOne(
+      { _id: id },
+      {
+        $pull: {
+          skuDetails: { _id: skuId },
+        },
+      },
+    );
+  }
+
+  async deleteAllLicences(productId: string, skuId: string) {
+    if (productId)
+      return await this.licenseModel.deleteMany({ product: productId });
+    return await this.licenseModel.deleteMany({ productSku: skuId });
   }
 }
