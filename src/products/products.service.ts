@@ -237,6 +237,10 @@ export class ProductsService {
         });
       }
 
+      if(!file) {
+        throw new BadRequestException('No file uploaded');
+      }
+
       const resOfCloudinary = await cloudinary.v2.uploader.upload(file.path, {
         folder: this.configService.get<string>('CLOUDINARY_FOLDER_PATH'),
         public_id: `product_${id}${Date.now()}`,
@@ -304,6 +308,7 @@ export class ProductsService {
               lifetime: data.skuDetails[i].lifetime + '',
               productId: productId,
               price: data.skuDetails[i].price,
+              stock: data.skuDetails[i].stock,
               productName: product.productName,
               productImage:
                 product.image ||
@@ -365,6 +370,7 @@ export class ProductsService {
             lifetime: data.lifetime + '',
             productId: productId,
             price: data.price,
+            stock: data.stock,
             productName: product.productName,
             productImage:
               product.image ||

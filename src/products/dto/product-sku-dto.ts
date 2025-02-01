@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -32,6 +33,11 @@ export class ProductSkuDto {
 
   @IsOptional()
   skuCode?: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @IsPositive()
+  stock!: number;
 }
 
 export class ProductSkuDtoArr {

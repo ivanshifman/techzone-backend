@@ -9,6 +9,8 @@ import {
   Headers,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { Roles } from 'src/shared/middleware/role.decorator';
+import { UserType } from 'src/shared/schema/users';
 import { CheckoutDtoArr } from './dto/checkout.dto';
 
 @Controller('orders')
@@ -25,6 +27,7 @@ export class OrdersController {
     return await this.ordersService.findOne(id);
   }
 
+  @Roles(UserType.CUSTOMER)
   @Post('/checkout')
   async checkout(@Body() body: CheckoutDtoArr, @Req() req: any) {
     return await this.ordersService.checkout(body, req.user);

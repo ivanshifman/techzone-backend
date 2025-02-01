@@ -46,6 +46,9 @@ export class SkuDetails extends Document {
   price!: number;
 
   @Prop({})
+  stock!: number;
+
+  @Prop({})
   validity!: number;
 
   @Prop({})

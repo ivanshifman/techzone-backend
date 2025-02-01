@@ -66,7 +66,7 @@ export class ProductsController {
   )
   async uploadProductImage(
     @Param('id') id: string,
-    @UploadedFile() file: ParameterDecorator,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     return await this.productsService.uploadProductImage(id, file);
   }
