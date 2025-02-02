@@ -11,11 +11,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Products, ProductSchema } from 'src/shared/schema/products';
 import { Users, UserSchema } from 'src/shared/schema/users';
 import { License, LicenseSchema } from 'src/shared/schema/license';
+import { Orders, OrderSchema } from 'src/shared/schema/orders';
 import { StripeModule } from '@golevelup/nestjs-stripe';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthMiddleware } from 'src/shared/middleware/auth';
 import { ProductRepository } from 'src/shared/repositories/product.repository';
 import { UserRepository } from 'src/shared/repositories/user.repository';
+import { OrdersRepository } from 'src/shared/repositories/order.repository';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from 'src/shared/middleware/roles.guard';
 import { AuthService } from 'src/shared/utility/token-generator';
@@ -35,6 +37,10 @@ import { ValidateMongoIdMiddleware } from 'src/shared/middleware/validate.id';
       {
         name: License.name,
         schema: LicenseSchema,
+      },
+      {
+        name: Orders.name,
+        schema: OrderSchema,
       },
     ]),
     StripeModule.forRootAsync({
@@ -59,6 +65,7 @@ import { ValidateMongoIdMiddleware } from 'src/shared/middleware/validate.id';
     ProductsService,
     ProductRepository,
     UserRepository,
+    OrdersRepository,
     AuthService,
     {
       provide: APP_GUARD,
@@ -101,6 +108,11 @@ export class ProductsModule implements NestModule {
         method: RequestMethod.PUT,
       },
       { path: 'products/licenses/:licenseKeyId', method: RequestMethod.DELETE },
+      { path: 'products/:productId/reviews', method: RequestMethod.POST },
+      {
+        path: 'products/:productId/reviews/:reviewId',
+        method: RequestMethod.DELETE,
+      },
     );
   }
 }

@@ -9,7 +9,13 @@ import { Types } from 'mongoose';
 @Injectable()
 export class ValidateMongoIdMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    const idsToValidate = ['id', 'productId', 'skuId', 'licenseKeyId'];
+    const idsToValidate = [
+      'id',
+      'productId',
+      'skuId',
+      'licenseKeyId',
+      'reviewId',
+    ];
 
     for (const param of idsToValidate) {
       if (req.params[param] && !Types.ObjectId.isValid(req.params[param])) {

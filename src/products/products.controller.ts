@@ -11,15 +11,18 @@ import {
   UseInterceptors,
   UploadedFile,
   Put,
+  Req,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { GetProductQueryDto } from './dto/get-product-quey-dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductSkuDto, ProductSkuDtoArr } from './dto/product-sku-dto';
+import { AddProductReviewDto } from './dto/add-rating.dto';
 import { Roles } from 'src/shared/middleware/role.decorator';
 import { UserType } from 'src/shared/schema/users';
 import { ConfigService } from '@nestjs/config';
 import { DynamicFileInterceptor } from 'src/shared/utility/dynamic-file-interceptor';
+
 
 @Controller('products')
 export class ProductsController {
@@ -140,5 +143,27 @@ export class ProductsController {
       licenseKeyId,
       licenseKey,
     );
+  }
+
+  @Post('/:productId/reviews')
+  @Roles(UserType.CUSTOMER)
+  async addProductReview(
+    @Param('productId') productId: string,
+    @Body() addProductReview: AddProductReviewDto,
+    @Req() req: any,
+  ) {
+    return await this.productsService.addProductReview(
+      productId,
+      addProductReview,
+      req.user,
+    );
+  }
+
+  @Delete('/:productId/reviews/:reviewId')
+  async removeProductReview(
+    @Param('productId') productId: string,
+    @Param('reviewId') reviewId: string,
+  ) {
+    return await this.productsService.removeProductReview(productId, reviewId);
   }
 }
