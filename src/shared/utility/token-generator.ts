@@ -15,7 +15,7 @@ export class AuthService {
     if (!secret) {
       throw new InternalServerErrorException('Token generation failed');
     }
-    return jwt.sign({ id, type }, secret, { expiresIn: '5m' });
+    return jwt.sign({ id, type }, secret, { expiresIn: '1d' });
   }
 
   decodeAuthToken(token: string): any {

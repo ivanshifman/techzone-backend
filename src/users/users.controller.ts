@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Res, Put, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Res,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -18,10 +31,17 @@ export class UsersController {
 
   @Post('/login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) response: Response) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const loginRes = await this.usersService.login(loginDto);
     if (loginRes.success) {
-      response.cookie('auth_token', loginRes.result?.token, { httpOnly: true, maxAge: 300000 });
+      response.cookie('auth_token', loginRes.result?.token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000,
+      });
     }
     return loginRes;
   }
@@ -33,7 +53,7 @@ export class UsersController {
 
   @Get('send-otp-email/:email')
   async sendOtpEmail(@Param('email') email: string) {
-    return await this.usersService.sendOtpEmail(email)
+    return await this.usersService.sendOtpEmail(email);
   }
 
   @Put('/logout')
