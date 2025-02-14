@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
-import * as csurf from 'csurf';
+// import * as csurf from 'csurf';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { NextFunction, raw, Request, Response } from 'express';
@@ -19,17 +19,29 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(helmet());
 
-  const ROOT_IGNORED_PATHS = [
-    `${configService.get<string>('API_PREFIX')}/orders/webhook`,
-  ];
-  const csrfMiddleware = csurf({
-    cookie: true,
-  });
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    if (ROOT_IGNORED_PATHS.includes(req.path)) {
-      return next();
-    }
-    return csrfMiddleware(req, res, next);
+  // const ROOT_IGNORED_PATHS = [
+  //   `${configService.get<string>('API_PREFIX')}/orders/webhook`,
+  // ];
+  // const csrfMiddleware = csurf({
+  //   cookie: {
+  //     key: '_csrf', // Asegúrate de que coincida con el frontend
+  //     httpOnly: false, // Protege contra acceso desde JS
+  //     secure: process.env.NODE_ENV === 'production', 
+  //     sameSite: 'lax', // Solo en HTTPS en producción
+  //   },
+  // });
+  
+  // app.use((req: Request, res: Response, next: NextFunction) => {
+  //   if (ROOT_IGNORED_PATHS.includes(req.path)) {
+  //     return next();
+  //   }
+  //   return csrfMiddleware(req, res, next);
+  // });
+
+  app.use((req: Request, res, next) => {
+    console.log('Cookies:', req.cookies); // Verifica si `_csrf` está presente
+    console.log('Headers:', req.headers);
+    next();
   });
 
   app.useGlobalPipes(

@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
 } from 'class-validator';
 import {
   baseType,
@@ -22,6 +23,7 @@ export class CreateProductDto {
   description!: string;
 
   @IsOptional()
+  @Matches(/^\S*$/, { message: 'Image cannot contain spaces' })
   image?: string;
 
   @IsOptional()
@@ -44,10 +46,12 @@ export class CreateProductDto {
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/^\S*$/, { message: 'ProductUrl cannot contain spaces' })
   productUrl!: string;
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/^\S*$/, { message: 'DownloadUrl cannot contain spaces' })
   downloadUrl!: string;
 
   @IsArray()

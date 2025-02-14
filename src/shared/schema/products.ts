@@ -86,10 +86,10 @@ export class Products {
   @Prop({ required: true, enum: baseType, index: true })
   baseType!: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, trim: true })
   productUrl!: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, trim: true })
   downloadUrl!: string;
 
   @Prop({})

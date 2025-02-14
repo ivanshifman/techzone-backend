@@ -333,7 +333,7 @@ export class UsersService {
       if (name) {
         await this.userDb.updateVerify(
           { _id: id },
-          { name },
+          { $set: { name } },
         );
       }
       
