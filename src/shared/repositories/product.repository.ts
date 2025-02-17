@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Products } from '../schema/products';
 import { License } from '../schema/license';
@@ -59,6 +59,30 @@ export class ProductRepository {
     if (query.search) {
       query.productName = new RegExp(query.search, 'i');
       delete query.search;
+    }
+
+    if (query.avgRating) {
+      const sortOrder =
+        query.avgRating === 'asc' ? 1 : query.avgRating === 'desc' ? -1 : null;
+      if (sortOrder === null) {
+        throw new BadRequestException(
+          'Invalid avgRating value. It should be "asc" or "desc".',
+        );
+      }
+      options.sort['avgRating'] = sortOrder;
+      delete query.avgRating;
+    }
+
+    if (query.createdAt) {
+      const sortOrder =
+        query.createdAt === 'asc' ? 1 : query.createdAt === 'desc' ? -1 : null;
+      if (sortOrder === null) {
+        throw new BadRequestException(
+          'Invalid createdAt value. It should be "asc" or "desc".',
+        );
+      }
+      options.sort['createdAt'] = sortOrder;
+      delete query.createdAt;
     }
 
     const result = await this.productModel.paginate(query, options);

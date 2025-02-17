@@ -18,7 +18,6 @@ import { ProductSkuDto, ProductSkuDtoArr } from './dto/product-sku-dto';
 import { AddProductReviewDto } from './dto/add-rating.dto';
 import { unlinkSync } from 'fs';
 
-
 @Injectable()
 export class ProductsService {
   constructor(
@@ -82,7 +81,7 @@ export class ProductsService {
       const options = {
         page: query.page || 1,
         limit: query.limit || 12,
-        sort: query.sort || { _id: 1 },
+        sort: {},
       };
 
       if (callForHomePage) {

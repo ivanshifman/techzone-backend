@@ -37,7 +37,7 @@ export class UsersService {
         createUserDto.password,
       );
 
-      if(createUserDto.type === UserType.ADMIN) {
+      if (createUserDto.type === UserType.ADMIN) {
         createUserDto.isVerified = true;
       }
 
@@ -125,7 +125,10 @@ export class UsersService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
-      const token = this.authService.generateAuthToken(String(userExists._id), String(userExists.type));
+      const token = this.authService.generateAuthToken(
+        String(userExists._id),
+        String(userExists.type),
+      );
 
       await this.userDb.updateOne(
         { email: userExists.email },
@@ -139,6 +142,7 @@ export class UsersService {
           user: {
             name: userExists.name,
             email: userExists.email,
+            type: userExists.type,
           },
           token,
         },
@@ -148,7 +152,10 @@ export class UsersService {
     }
   }
 
-  async verifyEmail(otp: string, email: string): Promise<{
+  async verifyEmail(
+    otp: string,
+    email: string,
+  ): Promise<{
     success: boolean;
     message: string;
   }> {
@@ -301,7 +308,10 @@ export class UsersService {
     }
   }
 
-  async updatePasswordOrName(id: string, updateUserDto: UpdateUserDto): Promise<{ success: boolean; message: string; result: any }> {
+  async updatePasswordOrName(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<{ success: boolean; message: string; result: any }> {
     try {
       const { oldPassword, newPassword, name } = updateUserDto;
       if (!newPassword && !name) {
@@ -315,10 +325,15 @@ export class UsersService {
 
       if (newPassword) {
         if (!oldPassword) {
-          throw new BadRequestException('Old password is required to update password');
+          throw new BadRequestException(
+            'Old password is required to update password',
+          );
         }
 
-        const isPasswordMatch = await comparePassword(oldPassword, user.password);
+        const isPasswordMatch = await comparePassword(
+          oldPassword,
+          user.password,
+        );
         if (!isPasswordMatch) {
           throw new UnauthorizedException('Invalid credentials');
         }
@@ -329,16 +344,13 @@ export class UsersService {
           { $set: { password: hashedPassword } },
         );
       }
-      
+
       if (name) {
-        await this.userDb.updateVerify(
-          { _id: id },
-          { $set: { name } },
-        );
+        await this.userDb.updateVerify({ _id: id }, { $set: { name } });
       }
-      
+
       const updatedUser = await this.userDb.findOne({ _id: id });
-      
+
       return {
         success: true,
         message: 'User updated successfully',
