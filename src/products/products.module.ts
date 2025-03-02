@@ -103,6 +103,7 @@ export class ProductsModule implements NestModule {
         method: RequestMethod.GET,
       },
       { path: 'products/:productId/skus/:skuId', method: RequestMethod.PUT },
+      { path: 'products/:productId/skus/:skuId', method: RequestMethod.DELETE },
       {
         path: 'products/:productId/skus/:skuId/licenses/:licenseKeyId',
         method: RequestMethod.PUT,

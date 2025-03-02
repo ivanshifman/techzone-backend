@@ -24,10 +24,10 @@ async function bootstrap() {
   // ];
   // const csrfMiddleware = csurf({
   //   cookie: {
-  //     key: '_csrf', // Asegúrate de que coincida con el frontend
-  //     httpOnly: false, // Protege contra acceso desde JS
+  //     key: '_csrf',
+  //     httpOnly: false,
   //     secure: process.env.NODE_ENV === 'production', 
-  //     sameSite: 'lax', // Solo en HTTPS en producción
+  //     sameSite: 'lax',
   //   },
   // });
   
@@ -38,11 +38,11 @@ async function bootstrap() {
   //   return csrfMiddleware(req, res, next);
   // });
 
-  app.use((req: Request, res, next) => {
-    console.log('Cookies:', req.cookies); // Verifica si `_csrf` está presente
-    console.log('Headers:', req.headers);
-    next();
-  });
+  // app.use((req: Request, res, next) => {
+  //   console.log('Cookies:', req.cookies); // Verifica si `_csrf` está presente
+  //   console.log('Headers:', req.headers);
+  //   next();
+  // });
 
   app.useGlobalPipes(
     new ValidationPipe({

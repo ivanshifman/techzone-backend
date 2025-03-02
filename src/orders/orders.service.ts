@@ -67,7 +67,7 @@ export class OrdersService {
         query.userId = user._id.toString();
       }
       if (status) {
-        query.status = status;
+        query.orderStatus = status;
       }
 
       const orders = await this.orderDb.find(query);

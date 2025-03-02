@@ -16,13 +16,13 @@ import {
 import { ProductsService } from './products.service';
 import { GetProductQueryDto } from './dto/get-product-quey-dto';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product-dto';
 import { ProductSkuDto, ProductSkuDtoArr } from './dto/product-sku-dto';
 import { AddProductReviewDto } from './dto/add-rating.dto';
 import { Roles } from 'src/shared/middleware/role.decorator';
 import { UserType } from 'src/shared/schema/users';
 import { ConfigService } from '@nestjs/config';
 import { DynamicFileInterceptor } from 'src/shared/utility/dynamic-file-interceptor';
-
 
 @Controller('products')
 export class ProductsController {
@@ -49,7 +49,7 @@ export class ProductsController {
   @Roles(UserType.ADMIN)
   async update(
     @Param('id') id: string,
-    @Body() updateProductDto: CreateProductDto,
+    @Body() updateProductDto: UpdateProductDto,
   ) {
     return await this.productsService.updateProduct(id, updateProductDto);
   }
@@ -98,6 +98,15 @@ export class ProductsController {
       skuId,
       updateProductDto,
     );
+  }
+
+  @Delete('/:productId/skus/:skuId')
+  @Roles(UserType.ADMIN)
+  async deleteSkuById(
+    @Param('productId') productId: string,
+    @Param('skuId') skuId: string,
+  ) {
+    return await this.productsService.deleteProductSkuById(productId, skuId);
   }
 
   @Post('/:productId/skus/:skuId/licenses')

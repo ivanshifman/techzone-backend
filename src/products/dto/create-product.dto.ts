@@ -4,6 +4,8 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUrl,
+  isURL,
   Matches,
 } from 'class-validator';
 import {
@@ -46,11 +48,13 @@ export class CreateProductDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsUrl()
   @Matches(/^\S*$/, { message: 'ProductUrl cannot contain spaces' })
   productUrl!: string;
 
   @IsString()
   @IsNotEmpty()
+  @IsUrl()
   @Matches(/^\S*$/, { message: 'DownloadUrl cannot contain spaces' })
   downloadUrl!: string;
 

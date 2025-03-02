@@ -8,12 +8,14 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  MinLength,
   ValidateNested,
 } from 'class-validator';
 
 export class ProductSkuDto {
   @IsString()
   @IsNotEmpty()
+  @MinLength(3)
   skuName!: string;
 
   @IsNotEmpty()

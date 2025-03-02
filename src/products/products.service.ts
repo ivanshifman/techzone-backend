@@ -13,6 +13,7 @@ import { OrdersRepository } from 'src/shared/repositories/order.repository';
 import { ConfigService } from '@nestjs/config';
 import { Products } from 'src/shared/schema/products';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product-dto';
 import { GetProductQueryDto } from './dto/get-product-quey-dto';
 import { ProductSkuDto, ProductSkuDtoArr } from './dto/product-sku-dto';
 import { AddProductReviewDto } from './dto/add-rating.dto';
@@ -151,7 +152,7 @@ export class ProductsService {
 
   async updateProduct(
     id: string,
-    updateProductDto: CreateProductDto,
+    updateProductDto: UpdateProductDto,
   ): Promise<{
     message: string;
     result: Products;
@@ -161,6 +162,14 @@ export class ProductsService {
       const productExist = await this.productDb.findOne({ _id: id });
       if (!productExist) {
         throw new NotFoundException('Product does not exist');
+      }
+
+      const existingProduct = await this.productDb.findOne({
+        productName: updateProductDto.productName,
+        _id: { $ne: id },
+      });
+      if (existingProduct) {
+        throw new ConflictException('Product name already exists');
       }
 
       const updatedProduct = await this.productDb.findOneAndUpdate(
@@ -398,6 +407,47 @@ export class ProductsService {
         message: 'Product sku updated successfully',
         success: true,
         result,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteProductSkuById(
+    productId: string,
+    skuId: string,
+  ): Promise<{
+    message: string;
+    success: boolean;
+    result: any;
+  }> {
+    try {
+      const productDetails = await this.productDb.findOne({ _id: productId });
+      if (!productDetails) {
+        throw new BadRequestException('Product or SKU details not found');
+      }
+
+      const skuDetails = productDetails.skuDetails.find(
+        (sku) => sku._id.toString() === skuId,
+      );
+      if (!skuDetails) {
+        throw new BadRequestException('Product or SKU details not found');
+      }
+
+      await this.stripeClient.prices.update(skuDetails.stripePriceId, {
+        active: false,
+      });
+
+      await this.productDb.deleteSku(productId, skuId);
+      await this.productDb.deleteAllLicences(productId, skuId);
+
+      return {
+        message: 'Product sku details deleted successfully',
+        success: true,
+        result: {
+          productId,
+          skuId,
+        },
       };
     } catch (error) {
       throw error;
