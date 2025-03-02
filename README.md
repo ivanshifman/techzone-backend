@@ -46,4 +46,4 @@ TechZone Backend is the server-side application for the TechZone e-commerce plat
 
 - Ivan Ezequiel Shifman
 
-- Visit my profile en [LinkedIn](https://ar.linkedin.com/in/iv%C3%A1n-ezequiel-shifman-042b0726a
+- Visit my profile en [LinkedIn](https://ar.linkedin.com/in/iv%C3%A1n-ezequiel-shifman-042b0726a)
