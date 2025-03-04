@@ -13,7 +13,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginDto } from './dto/login-user.dto';
@@ -23,7 +22,7 @@ import { UserType } from 'src/shared/schema/users';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService, private readonly configService: ConfigService) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -40,9 +39,8 @@ export class UsersController {
     if (loginRes.success) {
       response.cookie('auth_token', loginRes.result?.token, {
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: 'strict',
         maxAge: 24 * 60 * 60 * 1000,
-        secure: this.configService.get('NODE_ENV') === 'production',
       });
     }
     return loginRes;
