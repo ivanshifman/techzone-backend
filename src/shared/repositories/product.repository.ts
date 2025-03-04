@@ -40,7 +40,7 @@ export class ProductRepository {
       {
         $sample: { size: 4 },
       },
-    ]);
+    ]).exec();
     return products;
   }
 
@@ -52,7 +52,7 @@ export class ProductRepository {
           topRatedProducts: [{ $sort: { avgRating: -1 } }, { $limit: 8 }],
         },
       },
-    ]);
+    ]).exec();
   }
 
   async find(query: Record<string, any>, options: any) {
