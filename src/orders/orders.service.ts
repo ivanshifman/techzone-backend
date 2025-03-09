@@ -292,11 +292,11 @@ export class OrdersService {
         paymentInfo: {
           paymentMethod: session.payment_method_types[0],
           paymentIntentId: session.payment_intent,
-          paymentDate: new Date(),
+          paymentDate: new Date().toLocaleString(),
           paymentAmount: (session.amount_total ?? 0) / 100,
           paymentStatus: session.payment_status,
         },
-        orderDate: new Date(),
+        orderDate: new Date().toLocaleString(),
         checkoutSessionId: session.id,
         orderedItems: lineItems.data.map((item) => {
           if (!item.price) {
