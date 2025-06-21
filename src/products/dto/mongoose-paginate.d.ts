@@ -5,7 +5,7 @@ declare module 'mongoose' {
     paginate: (
       query?: any,
       options?: any,
-      callback?: (err: any, result: any) => void
+      callback?: (err: any, result: any) => void,
     ) => Promise<any>;
   }
 }

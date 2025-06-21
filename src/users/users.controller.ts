@@ -23,7 +23,10 @@ import { UserType } from 'src/shared/schema/users';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService, private readonly configService: ConfigService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {

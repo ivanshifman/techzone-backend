@@ -1,6 +1,5 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { Request } from 'express';
 
 @Controller()
 export class AppController {
@@ -16,6 +15,6 @@ export class AppController {
   //   return {
   //     result: req.csrfToken(),
   //   };
-    
+
   // }
 }

@@ -5,7 +5,6 @@ import {
   IsOptional,
   IsString,
   IsUrl,
-  isURL,
   Matches,
 } from 'class-validator';
 import {

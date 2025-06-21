@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Products } from '../schema/products';
@@ -33,26 +35,30 @@ export class ProductRepository {
   }
 
   async findRelatedProducts(query: Record<string, any>) {
-    const products = await this.productModel.aggregate([
-      {
-        $match: query,
-      },
-      {
-        $sample: { size: 4 },
-      },
-    ]).exec();
+    const products = await this.productModel
+      .aggregate([
+        {
+          $match: query,
+        },
+        {
+          $sample: { size: 4 },
+        },
+      ])
+      .exec();
     return products;
   }
 
   async findProductWithGroupBy() {
-    return await this.productModel.aggregate([
-      {
-        $facet: {
-          latestProducts: [{ $sort: { createdAt: -1 } }, { $limit: 4 }],
-          topRatedProducts: [{ $sort: { avgRating: -1 } }, { $limit: 8 }],
+    return await this.productModel
+      .aggregate([
+        {
+          $facet: {
+            latestProducts: [{ $sort: { createdAt: -1 } }, { $limit: 4 }],
+            topRatedProducts: [{ $sort: { avgRating: -1 } }, { $limit: 8 }],
+          },
         },
-      },
-    ]).exec();
+      ])
+      .exec();
   }
 
   async find(query: Record<string, any>, options: any) {

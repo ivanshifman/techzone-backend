@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   ArgumentsHost,
   Catch,
@@ -22,7 +25,11 @@ export class AllExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
 
-    if (typeof exception === 'object' && exception !== null && 'code' in exception) {
+    if (
+      typeof exception === 'object' &&
+      exception !== null &&
+      'code' in exception
+    ) {
       const errorCode = (exception as any).code;
       if (errorCode === 'EBADCSRFTOKEN') {
         return response.status(HttpStatus.FORBIDDEN).json({

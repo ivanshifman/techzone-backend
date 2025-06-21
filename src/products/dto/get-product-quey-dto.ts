@@ -1,13 +1,11 @@
-import { IsOptional, IsString, IsNumber, IsIn, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsEnum } from 'class-validator';
 
 export enum SortOrder {
-    ASC = 'asc',
-    DESC = 'desc',
-  }
+  ASC = 'asc',
+  DESC = 'desc',
+}
 
 export class GetProductQueryDto {
-
-  
   @IsOptional()
   @IsString()
   search?: string;

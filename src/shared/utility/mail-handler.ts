@@ -41,5 +41,3 @@ export const sendMail = async (
     throw new InternalServerErrorException('Failed to send email');
   }
 };
-
-

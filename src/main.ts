@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
@@ -5,7 +6,7 @@ import helmet from 'helmet';
 // import * as csurf from 'csurf';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
-import { NextFunction, raw, Request, Response } from 'express';
+import { raw } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
@@ -26,11 +27,10 @@ async function bootstrap() {
   //   cookie: {
   //     key: '_csrf',
   //     httpOnly: false,
-  //     secure: process.env.NODE_ENV === 'production', 
+  //     secure: process.env.NODE_ENV === 'production',
   //     sameSite: 'lax',
   //   },
   // });
-  
   // app.use((req: Request, res: Response, next: NextFunction) => {
   //   if (ROOT_IGNORED_PATHS.includes(req.path)) {
   //     return next();
